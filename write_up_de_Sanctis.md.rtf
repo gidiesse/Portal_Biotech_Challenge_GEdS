@@ -1,0 +1,74 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;\f2\fnil\fcharset0 Menlo-Regular;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red193\green193\blue193;\red0\green0\blue0;
+}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c80088\c80088\c79988;\cssrgb\c0\c1\c1;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww13480\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 Portal Biotech Submission Write-Up
+\f1\b0 \
+I just wanted to include a brief write-up of what I did in the exercise.\
+\
+In step 1, I loaded the dataset and tried to clean it and make it ready of ruse in modelling. I found the data to be clean and without missing values or outliers, so this was fairly straightforward. \
+\
+In step 2, I performed feature engineering (there was not much feature selection to be done as we only had 3 features). After some research on the relationship between retention time and hydrophobicity, I tried to codify the information given from the peptide sequence by focusing on peptide length and the hydrophobicity associated with each letter using the KD scale. This later turned out to be too much of a condensation, and I also included the frequency with which each letter appears in the peptide sequence as features. \
+\
+Step 3 was the classic linear regression model, I wanted this to be my benchmark model as it is the simplest one.  The first model did not perform well at all (
+\f2\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Train R\'b2: 0.5180750474751531, Test R\'b2: 0.5071210587956471)
+\f1\fs36 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 , but again I think this is because I condensed the information I had too much. By including the frequency with which each letter appears in the peptide sequence as features, I achieved: \
+\pard\pardeftab720\partightenfactor0
+
+\f2\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \
+Train R\'b2: 0.8623403842204198\
+Test R\'b2: 0.85796573992147\
+MAE: 12.85 \
+\uc0\u916 t95: 66.62
+\f1\fs36 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+R^2 is very similar for train and test which is a good sign in terms of the bias-variance trade-off. The model doesn\'92t seem to be overfitting and generalises well to data it hasn\'92t seen before. At 0.858, R^2 could be a little higher and with more time I would work on perfecting the model to try and improve it. \
+\
+MAE and delta-t-95 are both reported, but I am unsure of the unit as retention time in the dataset provided was unitless. Given the prevalence of negative values, I assumed for the purposes of this exercise that it was in the iRT scale, but I am not sure of this. So, we have an MAE of 12.85 units and a delta-t-95 of 66.2 iRT units. Since we don\'92t have the units,  we don\'92t have an absolute interpretation, but rather these metrics are useful to compare between the different models I tested and published benchmarks. \
+\
+Step 4 was trying ridge and lasso regression. Given that train and test R^2 were so similar and that I did not have a huge amount of features, I did not expect much improvement through regularisation. This was in fact the case, and I achieved: \
+\
+
+\f2\fs24 \cf4 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Ridge Train R\'b2: 0.8623\
+\pard\pardeftab720\partightenfactor0
+\cf4 \strokec3 Ridge Test R\'b2: 0.8580\
+Ridge MAE: 12.85 \
+Ridge \uc0\u916 t95: 33.31  \
+\
+Lasso Train R\'b2: 0.8622\
+Lasso Test R\'b2: 0.8576\
+Lasso MAE: 12.88 \
+Lasso \uc0\u916 t95: 66.64\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f1\fs36 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 With more time, it could have been worth testing different values of alpha to increase the regularisation, but again I do not expect that this would make a huge difference. \
+\
+Finally, step 5 was trying to use decision trees. Metrics achieved: \
+\pard\pardeftab720\partightenfactor0
+
+\f2\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \
+Train R\'b2: 0.8635\
+Test R\'b2:  0.7866\
+MAE: 16.74 \
+\uc0\u916 t95: 85.67
+\f1\fs36 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+Linear regression outperforms random trees on the test set by about 0.07. This was not entirely unexpected since decision trees have a tendency to overfit and given the information in the README that there is a known relationship between molecule size and hydrophobicity and retention time, it is not difficult to assume that this relationship is linear or close to linear and thus the linear regression model captures this well. Trees would work better if there was a more complex relationship to be found. However, with more time, it would definitely be worth doing some parameter tuning through a grid search and cross-validation. A more studied choice in parameters may lead to better performance, but I would still guess that the linear model is the best choice for this problem. \
+\
+The metrics chosen to compare the models were the ones that I found to be used in the literature after a quick internet search. 
+\f2\fs24 \cf4 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \
+}
